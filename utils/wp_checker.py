@@ -3,8 +3,6 @@ import json
 import re
 import requests
 
-from database import db, News
-
 
 class NewsCollector():
     FILENAME = 'museums-urls.csv'
@@ -55,29 +53,3 @@ class NewsCollector():
         except Exception:
             return []
         return result
-
-
-def collect_news(collector: NewsCollector, per_page: int) -> None:
-    """Собирает новости с сайтов в базу."""
-
-    collector.get_urls()
-    for url in collector.urls:
-        print(url)
-        data = collector.get_news(url, per_page)
-        if data == []:
-            continue
-        for post in data:
-            # news = News.objects.all() # todo
-            # title = post['title']
-            # url = post['url']
-            # if news.filter(url=url, title=title).exists():
-            #     continue
-            news = News(
-                title=post['title'],
-                news=post['post'],
-                url=post['url']
-            )
-            db.add(news)
-            db.commit()
-    print('Collecting finished')
-
