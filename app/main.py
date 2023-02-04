@@ -1,9 +1,7 @@
-from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, status, Request
-from time import sleep
+from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Request
 from utils.wp_checker import NewsCollector
 from database import SessionLocal, db
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 from sqlalchemy.sql import exists
 from typing import List
 import models
@@ -37,10 +35,11 @@ def collect_news(
         if data == []:
             continue
         for post in data:
-            #session.query(User.query.filter(User.id == 1).exists()).scalar()
-            #session.query(exists().where(User.email == '...')).scalar()
-            #if db.query(models.News).filter(and_(models.News.title == post['title'], models.News.url == post['url'])).exists().scalar():
-            if db.query(exists().where(models.News.title == post['title'], models.News.url == post['url'])).scalar():
+            if db.query(exists().where(
+                models.News.title == post['title'],
+                models.News.url == post['url']
+            )
+            ).scalar():
                 print('exists')
                 continue
             news = models.News(
@@ -50,6 +49,7 @@ def collect_news(
             )
             db.add(news)
             db.commit()
+    db.close()
     print('Collecting finished')
 
 
@@ -65,11 +65,13 @@ def read_news(request: Request, session: Session = Depends(get_session)):
 
     news = session.query(models.News).filter(
         models.News.title.contains(string) | models.News.news.contains(string)
-    ).all()[:10]
+    ).all()
+    total = session.query(models.News.id).count()
+    print('total = ', total)
     if not news:
         raise HTTPException(
             status_code=404,
-            detail=f"todo item with id {q} not found"
+            detail=f"News with '{q}' not found"
         )
     return news
 

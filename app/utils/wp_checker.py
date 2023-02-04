@@ -37,10 +37,16 @@ class NewsCollector():
         wp_api_url = f'/wp-json/wp/v2/posts/?per_page={per_page}'
         result = []
         try:
-            response = requests.get(url + wp_api_url)
+            response = requests.get(
+                url + wp_api_url,
+                allow_redirects=True,
+                timeout=5
+            )
             if response.headers['Content-Type'].startswith(
                 'application/json'
             ):
+                if len(response.content) > 25000000:
+                    raise ValueError('response too large from', url)
                 content = json.loads(response.content)
                 for post in content:
                     result.append({
@@ -50,6 +56,7 @@ class NewsCollector():
                         ),
                         'url': url
                     })
-        except Exception:
+        except Exception as e:
+            print('EXCEPTION: ', e)
             return []
         return result
