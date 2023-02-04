@@ -1,16 +1,9 @@
-GET http://www.artmuseum.ru/wp-json/wp/v2/posts
-
-###
-GET https://tes-museum.ru/wp-json/wp/v2/posts
-###
-GET http://bf-gallery.ru/wp-json/wp/v2/posts/?per_page=10
-
 ###
 
-GET http://127.0.0.1:8000/news/37
+GET http://127.0.0.1:8000/news/?q=ночь
 
 ###
 GET http://127.0.0.1:8000/collect/
 ###
 
-GET http://127.0.0.1:8000/api/news/
+GET http://127.0.0.1:8000/news/

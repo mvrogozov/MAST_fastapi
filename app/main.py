@@ -24,7 +24,6 @@ def get_session():
 def collect_news(
     collector: NewsCollector,
     per_page: int,
-    session: Session = get_session()
 ) -> None:
     """Собирает новости с сайтов в базу."""
 
@@ -40,15 +39,17 @@ def collect_news(
                 models.News.url == post['url']
             )
             ).scalar():
-                print('exists')
                 continue
             news = models.News(
                 title=post['title'],
                 news=post['post'],
                 url=post['url']
             )
-            db.add(news)
-            db.commit()
+            try:
+                db.add(news)
+                db.commit()
+            except Exception as e:
+                print('Ошибка записи в БД: ', e)
     db.close()
     print('Collecting finished')
 
@@ -62,12 +63,9 @@ def read_news(request: Request, session: Session = Depends(get_session)):
         string = encoded_str.decode('utf-8')
     except ValueError:
         string = mystr
-
     news = session.query(models.News).filter(
         models.News.title.contains(string) | models.News.news.contains(string)
     ).all()
-    total = session.query(models.News.id).count()
-    print('total = ', total)
     if not news:
         raise HTTPException(
             status_code=404,

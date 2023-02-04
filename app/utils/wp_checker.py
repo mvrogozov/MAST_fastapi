@@ -57,6 +57,6 @@ class NewsCollector():
                         'url': url
                     })
         except Exception as e:
-            print('EXCEPTION: ', e)
+            print('EXCEPTION while requesting url: ', e)
             return []
         return result

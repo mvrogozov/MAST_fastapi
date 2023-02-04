@@ -7,7 +7,7 @@ services:
     env_file:
       - app/.env
   web:
-    image: mvrogozov/museum_news_fastapi:v0.0.1
+    image: mvrogozov/museum_news_fastapi:v0.0.2
     restart: always
     ports:
       - 8000:8000
