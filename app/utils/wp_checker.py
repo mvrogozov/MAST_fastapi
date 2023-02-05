@@ -1,6 +1,6 @@
 import csv
-import json
 import re
+
 import requests
 
 
@@ -45,9 +45,9 @@ class NewsCollector():
             if response.headers['Content-Type'].startswith(
                 'application/json'
             ):
-                if len(response.content) > 25000000:
+                if len(response.content) > 250000:
                     raise ValueError('response too large from', url)
-                content = json.loads(response.content)
+                content = response.json()
                 for post in content:
                     result.append({
                         'title': post['title']['rendered'],

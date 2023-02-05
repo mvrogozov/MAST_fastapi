@@ -1,5 +1,5 @@
-from sqlalchemy import MetaData, Integer, Column
-from sqlalchemy import String, Text
+from sqlalchemy import Column, Integer, MetaData, String, Text
+
 from database import Base
 
 metadata = MetaData()

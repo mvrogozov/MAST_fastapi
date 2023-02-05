@@ -1,12 +1,13 @@
-from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Request
-from utils.wp_checker import NewsCollector
-from database import SessionLocal, db
+from typing import List
+
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import exists
-from typing import List
+
 import models
 import schemas
-
+from database import SessionLocal, db
+from utils.wp_checker import NewsCollector
 
 app = FastAPI()
 
@@ -33,6 +34,7 @@ def collect_news(
         data = collector.get_news(url, per_page)
         if data == []:
             continue
+        result = []
         for post in data:
             if db.query(exists().where(
                 models.News.title == post['title'],
@@ -45,27 +47,24 @@ def collect_news(
                 news=post['post'],
                 url=post['url']
             )
-            try:
-                db.add(news)
-                db.commit()
-            except Exception as e:
-                print('Ошибка записи в БД: ', e)
+            result.append(news)
+        try:
+            db.add_all(result)
+            db.commit()
+        except Exception as e:
+            print('Ошибка записи в БД: ', e)
     db.close()
     print('Collecting finished')
 
 
 @app.get("/news/", response_model=List[schemas.News])
-def read_news(request: Request, session: Session = Depends(get_session)):
-    q = str(request.query_params)
-    mystr = q[2:]
-    try:
-        encoded_str = bytes.fromhex(mystr.replace('%', ''))
-        string = encoded_str.decode('utf-8')
-    except ValueError:
-        string = mystr
-    news = session.query(models.News).filter(
-        models.News.title.contains(string) | models.News.news.contains(string)
-    ).all()
+def read_news(session: Session = Depends(get_session), q: str | None = None):
+    if q:
+        news = session.query(models.News).filter(
+            models.News.title.contains(q) | models.News.news.contains(q)
+        ).all()
+    else:
+        news = session.query(models.News).all()
     if not news:
         raise HTTPException(
             status_code=404,
